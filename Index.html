@@ -1,0 +1,229 @@
+
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101827">
+  <title>SchoolCountdown</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: white;
+      background: linear-gradient(135deg, #101827, #243b69, #101827);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 25px;
+      padding: 28px 20px;
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.3);
+    }
+
+    .logo {
+      font-size: 45px;
+    }
+
+    h1 {
+      margin: 10px 0;
+      font-size: 30px;
+    }
+
+    .subtitle {
+      color: #c5d5f5;
+      margin-bottom: 25px;
+    }
+
+    .countdown {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin: 25px 0;
+    }
+
+    .box {
+      background: rgba(255, 255, 255, 0.09);
+      border-radius: 16px;
+      padding: 20px 8px;
+    }
+
+    .number {
+      display: block;
+      font-size: 38px;
+      font-weight: bold;
+      color: #80b5ff;
+    }
+
+    .label {
+      font-size: 14px;
+      color: #dce6fa;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    input {
+      background: #fff;
+      color: #111827;
+      border: none;
+    }
+
+    button {
+      background: #4789ff;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .message {
+      margin-top: 20px;
+      color: #c5d5f5;
+      font-size: 14px;
+    }
+
+    footer {
+      margin-top: 25px;
+      font-size: 12px;
+      color: #aabce0;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <div class="logo">🎒</div>
+
+    <h1>SchoolCountdown</h1>
+    <p class="subtitle">Η αντίστροφη μέτρηση για το σχολείο σου!</p>
+
+    <p>Μένουν μέχρι την ημερομηνία σου:</p>
+
+    <div class="countdown">
+      <div class="box">
+        <span class="number" id="days">0</span>
+        <span class="label">Ημέρες</span>
+      </div>
+
+      <div class="box">
+        <span class="number" id="hours">00</span>
+        <span class="label">Ώρες</span>
+      </div>
+
+      <div class="box">
+        <span class="number" id="minutes">00</span>
+        <span class="label">Λεπτά</span>
+      </div>
+
+      <div class="box">
+        <span class="number" id="seconds">00</span>
+        <span class="label">Δευτερόλεπτα</span>
+      </div>
+    </div>
+
+    <label for="targetDate">Διάλεξε την ημερομηνία:</label>
+    <input type="datetime-local" id="targetDate">
+
+    <button id="saveButton">Αποθήκευση ημερομηνίας</button>
+
+    <p class="message" id="message">
+      Διάλεξε μια ημερομηνία για να ξεκινήσεις!
+    </p>
+
+    <footer>SchoolCountdown © 2026</footer>
+  </main>
+
+  <script>
+    const dateInput = document.getElementById("targetDate");
+    const message = document.getElementById("message");
+
+    let target = null;
+
+    dateInput.addEventListener("change", () => {
+      if (dateInput.value) {
+        target = new Date(dateInput.value).getTime();
+      }
+    });
+
+    document.getElementById("saveButton").addEventListener("click", () => {
+      if (!dateInput.value) {
+        message.textContent = "Διάλεξε πρώτα μια ημερομηνία!";
+        return;
+      }
+
+      target = new Date(dateInput.value).getTime();
+
+      if (target <= Date.now()) {
+        message.textContent = "Διάλεξε μια μελλοντική ημερομηνία!";
+        return;
+      }
+
+      localStorage.setItem("schoolCountdownDate", dateInput.value);
+      message.textContent = "Η ημερομηνία αποθηκεύτηκε! 🎉";
+      updateCountdown();
+    });
+
+    const savedDate = localStorage.getItem("schoolCountdownDate");
+
+    if (savedDate) {
+      dateInput.value = savedDate;
+      target = new Date(savedDate).getTime();
+    }
+
+    function updateCountdown() {
+      if (!target || target <= Date.now()) {
+        document.getElementById("days").textContent = "0";
+        document.getElementById("hours").textContent = "00";
+        document.getElementById("minutes").textContent = "00";
+        document.getElementById("seconds").textContent = "00";
+
+        if (target && target <= Date.now()) {
+          message.textContent = "Έφτασε η ημερομηνία! 🎉";
+        }
+        return;
+      }
+
+      const remaining = target - Date.now();
+
+      document.getElementById("days").textContent =
+        Math.floor(remaining / 86400000);
+
+      document.getElementById("hours").textContent =
+        String(Math.floor((remaining / 3600000) % 24)).padStart(2, "0");
+
+      document.getElementById("minutes").textContent =
+        String(Math.floor((remaining / 60000) % 60)).padStart(2, "0");
+
+      document.getElementById("seconds").textContent =
+        String(Math.floor((remaining / 1000) % 60)).padStart(2, "0");
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>
